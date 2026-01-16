@@ -36,4 +36,12 @@
         2. 运行 `python -m mcp_feedback_enhanced`。
         3. 或直接使用根目录的 `start_yunshu.bat`。
 
+*   **[SOL-002] MCP 连接修复 (Critical)**
+    *   **Intent**: 解决 MCP 客户端连接断开、"spawn ENOENT"、握手超时问题。
+    *   **Solution**:
+        1. **原理**: MCP 协议通过 Stdio 传输 JSON，任何 Stdout 杂音（Logo、Print、Warning）都会导致断连。
+        2. **工具**: 必须使用 `run_mcp.py` 启动器，它在底层使用 `os.dup2` 强制重定向 stderr 并过滤 stdout。
+        3. **配置**: MCP 配置中禁止使用 `cmd.exe`，必须直接调用 python 解释器绝对路径。
+        4. **并发**: Web UI 启动必须异步（Thread），禁止阻塞主线程，否则会导致握手超时。
+
 ---
