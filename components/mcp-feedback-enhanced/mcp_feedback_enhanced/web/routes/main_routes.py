@@ -161,18 +161,37 @@ def setup_routes(manager: "WebUIManager"):
         
         # [Yunshu System] Serve the Yunshu OS interface
         try:
+            # Priority 1: Check CWD (Current User Workspace)
+            cwd_index = Path.cwd() / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel" / "index.html"
+            
+            # Priority 2: Check Script Location
             current_file = Path(__file__).resolve()
-            debug_trace(f"Current file: {current_file}")
             # web -> routes -> mcp_feedback_enhanced -> mcp-feedback-enhanced -> components -> root
             project_root = current_file.parent.parent.parent.parent.parent.parent
-            debug_trace(f"Project root: {project_root}")
-            yunshu_index = project_root / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel" / "index.html"
-            debug_trace(f"Yunshu index path: {yunshu_index}")
+            script_index = project_root / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel" / "index.html"
             
-            if yunshu_index.exists():
-                debug_trace("Yunshu index exists, serving it")
-                with open(yunshu_index, "r", encoding="utf-8") as f:
+            target_index = None
+            if cwd_index.exists():
+                target_index = cwd_index
+                debug_trace(f"Found Yunshu index at CWD (Priority): {target_index}")
+            elif script_index.exists():
+                target_index = script_index
+                debug_trace(f"Found Yunshu index at Script Location: {target_index}")
+            
+            if target_index and target_index.exists():
+                debug_trace(f"Serving Yunshu index from: {target_index}")
+                with open(target_index, "r", encoding="utf-8") as f:
                     content = f.read()
+                
+                # [Hot Reload] Inject timestamp to force browser to reload static assets
+                import re
+                ts = int(time.time())
+                # Matches src="/yunshu_assets/..." or href="/static/..."
+                pattern = r'(src|href)="/(yunshu_assets|static)/([^"]+)"'
+                # Appends ?t=timestamp to the URL
+                replacement = f'\\1="/\\2/\\3?t={ts}"'
+                content = re.sub(pattern, replacement, content)
+
                 # Disable caching to ensure updates are seen immediately
                 headers = {
                     "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -181,22 +200,10 @@ def setup_routes(manager: "WebUIManager"):
                 }
                 return HTMLResponse(content=content, headers=headers)
             else:
-                debug_trace(f"Yunshu index NOT found at {yunshu_index}")
-                # Try absolute path based on CWD if relative resolution failed
-                cwd_index = Path.cwd() / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel" / "index.html"
-                if cwd_index.exists():
-                     debug_trace(f"Found Yunshu index at CWD: {cwd_index}")
-                     with open(cwd_index, "r", encoding="utf-8") as f:
-                        content = f.read()
-                     headers = {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Pragma": "no-cache",
-                        "Expires": "0",
-                     }
-                     return HTMLResponse(content=content, headers=headers)
+                debug_trace(f"Yunshu index NOT found at CWD or Script Location")
                 
                 try:
-                    parent_dir = yunshu_index.parent
+                    parent_dir = script_index.parent
                     if parent_dir.exists():
                         debug_trace(f"Parent dir contents: {os.listdir(parent_dir)}")
                     else:

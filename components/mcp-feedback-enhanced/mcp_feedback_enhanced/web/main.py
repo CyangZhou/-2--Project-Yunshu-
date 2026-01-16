@@ -317,34 +317,32 @@ class WebUIManager:
             raise RuntimeError(f"Static files directory not found: {web_static_path}")
             
         # [Yunshu System] Mount Yunshu Assets
-        # Try to locate Yunshu_System relative to the project root
-        # Assuming we are in components/mcp-feedback-enhanced/mcp_feedback_enhanced/web/main.py
-        # Project root is ../../../../..
-        try:
-            current_file = Path(__file__).resolve()
-            # Navigate up to project root: web -> mcp_feedback_enhanced -> mcp-feedback-enhanced -> components -> root
-            project_root = current_file.parent.parent.parent.parent.parent
-            yunshu_assets = project_root / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel"
-            
-            # Fallback check for CWD
-            if not yunshu_assets.exists():
-                 debug_log(f"Yunshu Assets not found at {yunshu_assets}, trying CWD fallback")
-                 cwd_assets = Path.cwd() / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel"
-                 if cwd_assets.exists():
-                      yunshu_assets = cwd_assets
-                      debug_log(f"Found Yunshu Assets at CWD: {yunshu_assets}")
+        # Priority 1: Check CWD (Current User Workspace)
+        cwd_assets = Path.cwd() / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel"
+        
+        # Priority 2: Script Location
+        current_file = Path(__file__).resolve()
+        # Navigate up to project root: web -> mcp_feedback_enhanced -> mcp-feedback-enhanced -> components -> root
+        project_root = current_file.parent.parent.parent.parent.parent
+        script_assets = project_root / "Yunshu_System" / "Interaction_Layer" / "Webview_Panel"
+        
+        yunshu_assets = None
+        if cwd_assets.exists():
+             yunshu_assets = cwd_assets
+             debug_log(f"Found Yunshu Assets at CWD (Priority): {yunshu_assets}")
+        elif script_assets.exists():
+             yunshu_assets = script_assets
+             debug_log(f"Using Yunshu Assets from script location: {yunshu_assets}")
+        else:
+             debug_log(f"Yunshu Assets not found at CWD or Script Location")
 
-            if yunshu_assets.exists():
-                self.app.mount(
-                    "/yunshu_assets", 
-                    StaticFiles(directory=str(yunshu_assets)), 
-                    name="yunshu_assets"
-                )
-                debug_log(f"Yunshu Assets mounted from: {yunshu_assets}")
-            else:
-                debug_log(f"Yunshu Assets not found at: {yunshu_assets}")
-        except Exception as e:
-            debug_log(f"Failed to mount Yunshu Assets: {e}")
+        if yunshu_assets and yunshu_assets.exists():
+            self.app.mount(
+                "/yunshu_assets", 
+                StaticFiles(directory=str(yunshu_assets)), 
+                name="yunshu_assets"
+            )
+            debug_log(f"Yunshu Assets mounted from: {yunshu_assets}")
 
     def _setup_templates(self):
         """設置模板引擎"""
