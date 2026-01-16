@@ -1,0 +1,75 @@
+# Yunshu System Skill Metadata Schema
+type: object
+required:
+  - name
+  - version
+  - author
+  - description
+  - input
+  - output
+  - lifecycle
+properties:
+  name:
+    type: string
+    description: Name of the skill
+  version:
+    type: string
+    description: Semantic version (e.g. 1.0.0)
+  author:
+    type: string
+    description: Author name
+  description:
+    type: string
+    description: Brief description of what the skill does
+  input:
+    type: array
+    description: List of input parameters
+    items:
+      type: object
+      required:
+        - name
+        - type
+        - label
+      properties:
+        name:
+          type: string
+          pattern: ^[a-zA-Z_][a-zA-Z0-9_]*$
+        type:
+          type: string
+          enum: [string, number, boolean, select, file]
+        label:
+          type: string
+          description: Human readable label for UI
+        required:
+          type: boolean
+          default: false
+        default:
+          description: Default value
+        options:
+          type: array
+          description: Options for select type
+  output:
+    type: object
+    required:
+      - type
+      - description
+    properties:
+      type:
+        type: string
+        enum: [text, markdown, json, file, image]
+      description:
+        type: string
+  lifecycle:
+    type: object
+    required:
+      - run
+    properties:
+      init:
+        type: string
+        description: Initialization function name (default: init)
+      run:
+        type: string
+        description: Main execution function name (default: run)
+      destroy:
+        type: string
+        description: Cleanup function name (default: destroy)

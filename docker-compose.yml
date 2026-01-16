@@ -1,0 +1,26 @@
+services:
+  yunshu-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.webui
+    container_name: yunshu-web
+    ports:
+      - "8765:8765"  # Web UI Port
+    volumes:
+      - ./components/mcp-feedback-enhanced/mcp_feedback_enhanced:/app/mcp_feedback_enhanced
+      - ./logs:/app/logs
+    environment:
+      - MCP_WEB_PORT=8765
+      - MCP_WEB_HOST=0.0.0.0
+      - MCP_DEBUG=true
+      - LANG=zh_CN.UTF-8
+      - LANGUAGE=zh_CN:zh
+    # 使用 sleep infinity 让容器保持运行，等待 Trae 通过 docker exec 连接
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks:
+      - yunshu-net
+
+networks:
+  yunshu-net:
+    driver: bridge

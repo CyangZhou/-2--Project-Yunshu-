@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Env
+venv/
+env/
+ENV/
+.env
+.venv
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+route_trace.log
+
+# System
+thumbs.db
+Thumbs.db
+.DS_Store
+
+# User Data (Exclude novels and personal data if needed, but for now user wants to upload "Yunshu System")
+# Assuming Novels might contain user content, but maybe user wants them backed up?
+# Keeping Novels for now as it seems to be part of the system's "memory" or content.
+# If "Novels" is too large, we might want to ignore it, but I'll keep it unless it's huge.
+
+# Temp
+tmp/
+temp/

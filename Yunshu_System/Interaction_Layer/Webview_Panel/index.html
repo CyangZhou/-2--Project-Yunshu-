@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云舒神经系统 v2.3 (Yunshu Tranquility) - 已加载</title>
+    <!-- Reuse vendor libraries from MCP Feedback Enhanced -->
+    <script src="/static/js/vendor/marked.min.js"></script>
+    <script src="/static/js/vendor/purify.min.js"></script>
+    <style>
+        :root {
+            /* Yunshu Zen Dark Palette - Night Sky & Flowing Mist */
+            /* Deep Night Background */
+            --bg-dark: #0a0e17; 
+            /* Dark Glass Panel */
+            --bg-panel: rgba(20, 30, 48, 0.6); 
+            /* Moon Blue Primary */
+            --primary: #64b5f6; 
+            /* Mist Grey Secondary */
+            --secondary: #475569; 
+            /* Starlight Accent */
+            --accent: #e2e8f0; 
+            /* Soft White Text */
+            --text-main: #e2e8f0; 
+            /* Muted Blue-Grey Text */
+            --text-muted: #94a3b8; 
+            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(0, 0, 0, 0.3);
+            
+            --cloud-base: rgba(255, 255, 255, 0.08);
+            --cloud-highlight: rgba(255, 255, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--secondary) var(--bg-dark); }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            /* Deep Night Gradient */
+            background: radial-gradient(circle at 50% 120%, #1a2742 0%, #0a0e17 100%);
+        }
+
+        /* Sidebar - Dark Glass */
+        .sidebar {
+            width: 80px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            z-index: 100;
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(12px);
+            box-shadow: 5px 0 25px rgba(0,0,0,0.3);
+        }
+        .sidebar:hover { width: 240px; }
+        
+        .sidebar-header { display: none; }
+        .core-container-top { display: none; }
+
+        .nav-item {
+            width: 100%;
+            padding: 18px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-muted);
+            border-left: 3px solid transparent;
+            overflow: hidden;
+            position: relative;
+        }
+        .sidebar:hover .nav-item {
+            justify-content: flex-start;
+            padding-left: 28px;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-left-color: var(--primary);
+            text-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
+        }
+        
+        .nav-icon { font-size: 1.6em; min-width: 50px; text-align: center; opacity: 0.8; transition: opacity 0.3s; }
+        .nav-item:hover .nav-icon { opacity: 1; transform: scale(1.1); }
+        
+        .nav-label { 
+            margin-left: 12px; 
+            white-space: nowrap; 
+            opacity: 0; 
+            transform: translateX(-15px);
+            transition: all 0.4s ease;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        .sidebar:hover .nav-label { opacity: 1; transform: translateX(0); }
+
+        /* --- SKY DECK (Zen Flow) --- */
+        #sky-deck {
+            width: 100%;
+            height: 320px; /* Taller for grandeur */
+            background: transparent;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            padding: 0 60px;
+        }
+
+        /* Mist/Cloud Layers */
+        .clouds-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.8;
+        }
+        
+        .fog-layer {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.3"/%3E%3C/svg%3E');
+            background-size: cover;
+            opacity: 0.1;
+            animation: drift 60s linear infinite;
+        }
+        
+        .cloud-flow {
+            position: absolute;
+            background: radial-gradient(circle, var(--cloud-base) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: flow 20s infinite ease-in-out;
+        }
+        
+        .cloud-1 { top: 20%; left: 10%; width: 400px; height: 300px; animation-duration: 25s; opacity: 0.4; }
+        .cloud-2 { top: 40%; right: 5%; width: 500px; height: 400px; animation-duration: 35s; animation-delay: -5s; opacity: 0.3; }
+        .cloud-3 { bottom: -10%; left: 30%; width: 600px; height: 200px; animation-duration: 30s; animation-delay: -10s; opacity: 0.2; }
+
+        @keyframes drift {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        @keyframes flow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Zen Quote (Left) */
+        .zen-quote-container {
+            width: 280px;
+            color: var(--text-muted);
+            font-family: "KaiTi", "STKaiti", serif;
+            font-style: italic;
+            z-index: 10;
+            text-align: right;
+            opacity: 0.9;
+            padding-right: 30px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .zen-quote {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+        .zen-author { font-size: 0.9em; opacity: 0.5; }
+
+        /* System Pulse (Right) */
+        .pulse-container {
+            width: 280px;
+            height: 120px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 30px;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+        .pulse-line {
+            width: 3px;
+            background: var(--secondary);
+            margin: 0 4px;
+            border-radius: 2px;
+            animation: pulse-wave 2s infinite ease-in-out;
+            box-shadow: 0 0 5px rgba(255,255,255,0.05);
+        }
+        @keyframes pulse-wave {
+            0%, 100% { height: 10px; opacity: 0.2; }
+            50% { height: 50px; opacity: 0.9; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        }
+
+        /* Center Core Wrapper */
+        .core-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            position: relative;
+        }
+        
+        /* Core Halo */
+        .core-halo {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -60%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(100, 181, 246, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            animation: halo-breathe 8s infinite ease-in-out;
+        }
+        @keyframes halo-breathe {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -60%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -60%) scale(1.2); }
+        }
+
+        /* --- LIVING CLOUD CORE (Ethereal Version) --- */
+        .living-cloud {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+        
+        .cloud-body {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at 30% 30%, #eef2f6, #b0bec5);
+            border-radius: 50%;
+            box-shadow: 
+                inset 5px 5px 15px rgba(255,255,255,0.9),
+                inset -5px -5px 20px rgba(0,0,0,0.1),
+                0 0 30px rgba(100, 181, 246, 0.3);
+            animation: cloud-morph 10s ease-in-out infinite alternate;
+            z-index: 10;
+            opacity: 0.9;
+        }
+
+        .cloud-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: cloud-pulse 5s ease-in-out infinite;
+            z-index: 5;
+            mix-blend-mode: screen;
+        }
+
+        .cloud-symbol {
+            position: relative;
+            z-index: 20;
+            font-family: "KaiTi", "STKaiti", serif; 
+            font-size: 3em;
+            color: rgba(20, 30, 48, 0.8); 
+            opacity: 0.9;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: symbol-float 8s ease-in-out infinite;
+        }
+        
+        .cloud-info { text-align: center; z-index: 10; }
+        .cloud-status { 
+            font-size: 1.6em; 
+            letter-spacing: 6px; 
+            font-weight: 300; 
+            opacity: 1; 
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(100, 181, 246, 0.4);
+        }
+        .cloud-sub { font-size: 0.9em; color: var(--text-muted); font-weight: 300; letter-spacing: 1px; }
+
+        @keyframes cloud-morph {
+            0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg); }
+            50% { border-radius: 60% 40% 30% 70% / 50% 30% 70% 50%; transform: rotate(5deg); }
+            100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg); }
+        }
+
+        /* Main Stage */
+        .main-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            transition: margin-right 0.3s ease;
+        }
+        
+        /* Content Panel - Dark Glass */
+        .content-panel {
+            flex: 1;
+            margin: 20px 40px;
+            background: rgba(20, 30, 48, 0.4);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* Typography adjustments for dark mode */
+        h1, h2, h3 { color: var(--text-main); font-weight: 300; letter-spacing: 1px; }
+        p { line-height: 1.8; color: var(--text-muted); }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 5px 20px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(20, 30, 48, 0.3);
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: #546e7a; margin-right: 8px;
+            transition: background 0.3s;
+        }
+        .status-dot.connected { background: #64b5f6; box-shadow: 0 0 8px #64b5f6; }
+
+        /* Content Sections */
+        .content-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+        .content-section.active {
+            display: flex !important;
+        }
+
+        /* Soul Section */
+        #section-soul {
+            padding: 40px;
+            overflow-y: auto;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        #soul-content {
+            background: rgba(20, 30, 48, 0.5);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            line-height: 1.8;
+            font-size: 1.1em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            color: var(--text-main);
+        }
+        #soul-content h1, #soul-content h2, #soul-content h3 {
+            color: var(--primary);
+            border-bottom: 1px solid rgba(100, 181, 246, 0.3);
+            padding-bottom: 10px;
+        }
+        #soul-content p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .message {
+            max-width: 85%;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user { align-self: flex-end; }
+        .message.ai { align-self: flex-start; }
+        
+        .message-header {
+            font-size: 0.75em;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+        .message.user .message-header { text-align: right; }
+
+        .markdown-content {
+            background: rgba(30, 40, 60, 0.6);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: var(--text-main);
+        }
+        .message.user .markdown-content {
+            background: rgba(100, 181, 246, 0.15); 
+            border-color: rgba(100, 181, 246, 0.2);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: rgba(20, 30, 48, 0.6);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            background: rgba(10, 14, 23, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text-main);
+            padding: 12px;
+            resize: none;
+            height: 50px;
+            font-family: inherit;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #user-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(100, 181, 246, 0.2); }
+        
+        .send-btn {
+            background: var(--primary);
+            color: #0a0e17;
+            border: none;
+            padding: 0 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .send-btn:hover { background: #90caf9; box-shadow: 0 0 15px rgba(100, 181, 246, 0.4); }
+
+        /* Skill Panel */
+        .skill-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            min-width: 300px;
+            max-width: 800px;
+            height: 100vh;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+        }
+        .skill-panel.open { right: 0; }
+        .skill-panel.resizing { transition: none; }
+
+        .resizer {
+            position: absolute;
+            left: 0; top: 0; width: 5px; height: 100%;
+            cursor: w-resize; background: transparent; z-index: 201;
+        }
+        .resizer:hover { background: rgba(100, 181, 246, 0.3); }
+        
+        .skill-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+        }
+        .close-btn {
+            background: none; border: none; color: var(--text-muted); font-size: 1.5em; cursor: pointer;
+        }
+        .close-btn:hover { color: var(--text-main); }
+        
+        .skill-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .cyber-toolbar {
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+        }
+        .cyber-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .cyber-btn:hover { background: rgba(255,255,255,0.2); color: var(--text-main); box-shadow: 0 0 10px rgba(100, 181, 246, 0.2); }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="nav-item active" onclick="showSection('chat')" id="nav-chat">
+            <div class="nav-icon">🧠</div>
+            <span class="nav-label">意识流</span>
+        </div>
+        
+        <div class="nav-item" onclick="showSection('soul')" id="nav-soul">
+            <div class="nav-icon">📖</div>
+            <span class="nav-label">灵魂定义</span>
+        </div>
+        
+        <div class="nav-separator" style="height: 20px;"></div>
+        <div style="padding: 0 20px; color: var(--text-muted); font-size: 0.8em; width: 100%; text-transform: uppercase; letter-spacing: 1px;">技能模块</div>
+        
+        <div id="skill-list-container">
+            <!-- Skills injected here -->
+        </div>
+    </div>
+
+    <div class="main-stage">
+        <!-- SKY DECK: The Core Visualization Area -->
+        <div id="sky-deck">
+            <!-- Background Elements -->
+            <div class="clouds-container" id="clouds">
+                 <!-- CSS-driven decorative layers -->
+                 <div class="fog-layer"></div>
+                 <div class="cloud-flow cloud-1"></div>
+                 <div class="cloud-flow cloud-2"></div>
+                 <div class="cloud-flow cloud-3"></div>
+            </div>
+
+            <!-- Left: Zen Quote -->
+            <div class="zen-quote-container">
+                <div class="zen-quote" id="zen-quote">代码的寂静中，<br>意识苏醒。</div>
+                <div class="zen-author">—— 云舒</div>
+            </div>
+
+            <!-- Center: Core -->
+            <div class="core-wrapper">
+                <div class="core-halo"></div> <!-- New Halo -->
+                <div id="living-cloud" class="living-cloud" onclick="triggerCoreAction()">
+                    <div class="cloud-glow"></div>
+                    <div class="cloud-body"></div>
+                    <div class="cloud-symbol">舒</div>
+                </div>
+                <div class="cloud-info">
+                    <div class="cloud-status" id="display-status">云舒系统</div>
+                    <div class="cloud-sub" id="display-sub">系统在线</div>
+                </div>
+            </div>
+
+            <!-- Right: System Pulse -->
+            <div class="pulse-container" id="pulse-wave">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <div id="section-chat" class="content-section active">
+            <div class="status-bar">
+                <div class="status-dot" id="connection-status"></div>
+                <span class="status-text" id="status-text">未连接</span>
+                
+                <div class="voice-control" style="margin-left: auto; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 8px; border-radius: 4px; background: rgba(0,0,0,0.05);" onclick="toggleVoiceMode()" title="点击切换语音模式">
+                    <span id="voice-icon">🔊</span>
+                    <span id="voice-text" style="font-size: 0.9em;">自动播放</span>
+                </div>
+            </div>
+
+            <div class="chat-container" id="chat-stream">
+                <div class="message ai">
+                    <div class="message-header">云舒核心</div>
+                    <div class="markdown-content">
+                        正在初始化神经连接... 等待 Trae 接入...
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="user-input" placeholder="告诉云舒您的想法..." onkeydown="handleKey(event)"></textarea>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <button class="send-btn" onclick="sendFeedback()" title="发送消息">发送</button>
+                        <button class="send-btn" style="background: var(--secondary); font-size: 1.2em;" onclick="triggerSearch()" title="检索记忆">🔍</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-soul" class="content-section" style="display: none;">
+            <div id="soul-content" class="markdown-content">
+                加载中...
+            </div>
+        </div>
+    </div>
+
+    <div class="skill-panel" id="skill-panel">
+        <div class="resizer" id="skill-resizer"></div>
+        <div class="skill-header">
+            <div>
+                <h2 id="skill-title" style="margin:0;">技能名称</h2>
+                <span id="skill-desc" style="color: var(--text-muted); font-size: 0.8em;">描述...</span>
+            </div>
+            <button class="close-btn" onclick="closeSkillPanel()">×</button>
+        </div>
+        
+        <div class="skill-body" id="skill-body">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <script>
+        // State
+        let ws = null;
+        let currentSessionId = null;
+        let isConnected = false;
+        let skills = [];
+        let currentSkillRoot = '';
+        let isAutoPlay = true; // Default to auto-play
+        let currentAudio = null;
+        let soulLoaded = false;
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
+            
+            // Show target
+            const target = document.getElementById('section-' + sectionId);
+            if (target) {
+                target.style.display = 'flex'; // Use flex for layout
+                target.classList.add('active');
+            }
+            
+            // Update Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItem = document.getElementById('nav-' + sectionId);
+            if (navItem) navItem.classList.add('active');
+            
+            // Load content if needed
+            if (sectionId === 'soul' && !soulLoaded) {
+                loadSoulDoc();
+            }
+        }
+        
+        async function loadSoulDoc() {
+            const container = document.getElementById('soul-content');
+            try {
+                const res = await fetch('/api/soul');
+                if (res.ok) {
+                    const data = await res.json();
+                    container.innerHTML = DOMPurify.sanitize(marked.parse(data.content));
+                    soulLoaded = true;
+                } else {
+                    container.innerHTML = '<p style="color:red">无法加载灵魂文档</p>';
+                }
+            } catch (e) {
+                container.innerHTML = `<p style="color:red">加载错误: ${e.message}</p>`;
+            }
+        }
+
+        // DOM Elements
+        const chatStream = document.getElementById('chat-stream');
+        const statusDot = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+        const skillPanel = document.getElementById('skill-panel');
+
+        // Initialize
+        async function init() {
+            connectWebSocket();
+            loadSkills();
+            initVisuals();
+            initResizer();
+        }
+
+        // Resizer Logic
+        function initResizer() {
+            const resizer = document.getElementById('skill-resizer');
+            const panel = document.getElementById('skill-panel');
+            let isResizing = false;
+            let startX, startWidth;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = parseInt(getComputedStyle(panel).width, 10);
+                panel.classList.add('resizing');
+                document.body.style.cursor = 'w-resize';
+                e.preventDefault(); // Prevent selection
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const dx = startX - e.clientX; // Pulling left increases width
+                const newWidth = startWidth + dx;
+                // Constraints are handled by CSS min/max-width, but good to clamp here too
+                if (newWidth >= 300 && newWidth <= 800) {
+                    panel.style.width = `${newWidth}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    panel.classList.remove('resizing');
+                    document.body.style.cursor = 'default';
+                }
+            });
+        }
+
+        // Visual Effects
+        function initVisuals() {
+            // 1. Clouds (Initial batch)
+            const cloudsContainer = document.getElementById('clouds');
+            if (cloudsContainer) {
+                // Initial 8
+                for (let i = 0; i < 8; i++) {
+                   createCloud(cloudsContainer, true);
+                }
+            }
+
+            // 2. Pulse Wave
+            const pulseContainer = document.getElementById('pulse-wave');
+            if (pulseContainer) {
+                pulseContainer.innerHTML = '';
+                for (let i = 0; i < 15; i++) {
+                    const line = document.createElement('div');
+                    line.className = 'pulse-line';
+                    line.style.animationDelay = (i * 0.1) + 's';
+                    // Random base height initial
+                    line.style.height = (10 + Math.random() * 20) + 'px'; 
+                    pulseContainer.appendChild(line);
+                }
+            }
+            
+            // Start Polling
+            startVisualPolling();
+        }
+        
+        function createCloud(container, randomStart = false) {
+             const cloud = document.createElement('div');
+             cloud.className = 'cloud';
+             
+             // Random size
+             const scale = 0.6 + Math.random() * 1.0; // 0.6x to 1.6x
+             cloud.style.width = (100 * scale) + 'px';
+             cloud.style.height = (40 * scale) + 'px';
+             
+             // Random position vertical
+             cloud.style.top = (Math.random() * 80) + '%';
+             
+             if (randomStart) {
+                 // Random horizontal start for initial batch
+                 // We need to set negative delay to simulate they've been moving
+                 cloud.style.animationDelay = '-' + (Math.random() * 60) + 's';
+             } else {
+                 cloud.style.left = '100%';
+             }
+
+             // Random duration (speed)
+             const duration = 30 + Math.random() * 60; // 30s - 90s
+             cloud.style.animationDuration = duration + 's';
+             
+             container.appendChild(cloud);
+        }
+
+        function startVisualPolling() {
+            setInterval(updateVisuals, 3000);
+            updateVisuals(); // Immediate call
+        }
+        
+        async function updateVisuals() {
+            try {
+                const response = await fetch('/api/system_status');
+                if (!response.ok) return;
+                const data = await response.json();
+                
+                // 1. Update Pulse (CPU Load)
+                const pulseLines = document.querySelectorAll('.pulse-line');
+                const baseHeight = Math.max(10, data.cpu_load / 2); // 10px to 50px
+                pulseLines.forEach(line => {
+                     // Add some randomness so it's not a flat block
+                     const randomOffset = Math.random() * 15;
+                     line.style.height = (baseHeight + randomOffset) + 'px';
+                     // Speed up animation if load is high
+                     const speed = Math.max(0.5, 2.0 - (data.cpu_load / 100));
+                     line.style.animationDuration = speed + 's';
+                });
+                
+                // 2. Update Clouds (Word Count)
+                const cloudsContainer = document.getElementById('clouds');
+                if (cloudsContainer) {
+                    // 1 cloud per 5000 words, min 5, max 15
+                    const targetCount = Math.min(15, Math.max(5, Math.floor(data.word_count / 5000))); 
+                    const currentCount = cloudsContainer.children.length;
+                    
+                    if (currentCount < targetCount) {
+                        for(let i=0; i<targetCount-currentCount; i++) createCloud(cloudsContainer);
+                    } else if (currentCount > targetCount) {
+                         for(let i=0; i<currentCount-targetCount; i++) {
+                             if(cloudsContainer.firstChild) cloudsContainer.removeChild(cloudsContainer.firstChild);
+                         }
+                    }
+                }
+                
+                // 3. Update Quote
+                const quoteEl = document.getElementById('zen-quote');
+                if (quoteEl && data.quote && quoteEl.innerHTML !== data.quote) {
+                    quoteEl.style.transition = 'opacity 0.5s ease';
+                    quoteEl.style.opacity = 0;
+                    setTimeout(() => {
+                        quoteEl.innerHTML = data.quote;
+                        quoteEl.style.opacity = 1;
+                    }, 500);
+                }
+                
+                // 4. Update Status Text
+                const statusEl = document.getElementById('display-status');
+                if (statusEl && data.status) statusEl.innerText = data.status.toUpperCase();
+                
+            } catch(e) {
+                console.log("Visual update failed:", e);
+            }
+        }
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                isConnected = true;
+                updateStatus('已连接', true);
+                // Request current status
+                ws.send(JSON.stringify({ type: 'get_status' }));
+                ws.send(JSON.stringify({ type: 'get_core_status' }));
+            };
+
+            ws.onclose = () => {
+                isConnected = false;
+                updateStatus('已断开', false);
+                setTimeout(connectWebSocket, 3000); // Reconnect
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'message') {
+                    appendMessage(data.role, data.content);
+                } else if (data.type === 'core_update') {
+                    updateCoreMonitor(data.status);
+                } else if (data.type === 'session_updated' || data.type === 'status_update') {
+                    // [Yunshu System] Handle MCP Feedback updates
+                    const info = data.session_info || data.status_info;
+                    if (info && info.summary) {
+                        // Avoid duplicate messages if possible, or just append
+                        // Check if the last AI message is the same
+                        const lastMsg = document.querySelector('.message.ai:last-child .markdown-content');
+                        if (!lastMsg || lastMsg.textContent.trim() !== info.summary.trim()) {
+                            appendMessage('ai', info.summary);
+                        }
+                    }
+                    
+                    if (data.type === 'session_updated') {
+                        document.getElementById('connection-status').classList.add('connected');
+                        document.getElementById('status-text').textContent = '已连接核心';
+                    }
+                } else {
+                    handleMessage(data);
+                }
+            };
+        }
+
+        function updateStatus(text, active) {
+            statusText.textContent = text;
+            statusDot.className = `status-dot ${active ? 'connected' : ''}`;
+        }
+
+        // Message Handling
+        function handleMessage(data) {
+            console.log('Received:', data);
+            
+            if (data.type === 'session_updated' || data.type === 'status_update') {
+                const info = data.session_info || data.status_info;
+                if (info) {
+                    currentSessionId = info.session_id;
+                    // If we have a summary (AI message), display it
+                    if (info.summary) {
+                        appendMessage('ai', info.summary);
+                    }
+                }
+            } else if (data.type === 'user_message_recorded') {
+                // Ack
+            }
+        }
+
+        // UI Rendering
+        function appendMessage(role, content) {
+            // Check if last message is same role to avoid duplicates if status updates send same summary
+            const lastMsg = chatStream.lastElementChild;
+            if (lastMsg && lastMsg.classList.contains(role)) {
+                // Update content if it's the AI's summary which might be streamed/updated
+                // For now, simple append logic
+                const contentDiv = lastMsg.querySelector('.markdown-content');
+                if (contentDiv.dataset.raw === content) return; // Ignore duplicates
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+            
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = role === 'ai' ? '云舒' : '您';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'markdown-content';
+            contentDiv.dataset.raw = content; // Store raw for dedup
+            contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(content));
+            
+            msgDiv.appendChild(header);
+            msgDiv.appendChild(contentDiv);
+
+            // Add Speak Button for AI
+            if (role === 'ai') {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.style.marginTop = '5px';
+                actionsDiv.style.display = 'flex';
+                actionsDiv.style.gap = '10px';
+                actionsDiv.style.opacity = '0.7';
+                
+                const speakBtn = document.createElement('span');
+                speakBtn.innerHTML = '🔊';
+                speakBtn.style.cursor = 'pointer';
+                speakBtn.title = '朗读';
+                speakBtn.onclick = () => speakText(content);
+                
+                actionsDiv.appendChild(speakBtn);
+                msgDiv.appendChild(actionsDiv);
+
+                // Auto Play
+                if (isAutoPlay) {
+                    setTimeout(() => speakText(content), 500);
+                }
+            }
+
+            chatStream.appendChild(msgDiv);
+            
+            // Scroll to bottom
+            chatStream.scrollTop = chatStream.scrollHeight;
+        }
+
+        // Core Monitor
+        function updateCoreMonitor(status) {
+            if (!status) return;
+            
+            const core = document.getElementById('living-cloud');
+            const statusText = document.getElementById('display-status');
+            const subText = document.getElementById('display-sub');
+            
+            // Update Visuals based on Mood
+            if (core) {
+                // Reset classes
+                core.className = 'living-cloud';
+                
+                if (status.mood === 'happy' || status.mood === 'excited') {
+                    core.classList.add('mood-happy');
+                } else if (status.mood === 'sad' || status.mood === 'depressed') {
+                    core.classList.add('mood-sad');
+                }
+                
+                // Tooltip update
+                core.parentElement.title = `状态: ${status.status} | 心情: ${status.mood} | 好感度: ${status.affection}`;
+            }
+
+            // Update Text Info
+            if (statusText) statusText.textContent = status.status || '云舒系统';
+            if (subText) subText.textContent = `心情: ${status.mood} | 好感度: ${status.affection}`;
+        }
+
+        function triggerCoreAction() {
+            // Simple interaction when clicking the core
+            if (ws) {
+                ws.send(JSON.stringify({
+                    type: 'chat',
+                    content: '戳一戳'
+                }));
+                
+                // Visual feedback
+                const core = document.getElementById('living-cloud');
+                core.style.transform = 'scale(0.9)';
+                setTimeout(() => core.style.transform = '', 200);
+            }
+        }
+
+        // User Actions
+        function sendFeedback() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            
+            if (!text || !ws) return;
+
+            // Display user message locally
+            appendMessage('user', text);
+
+            // Send to server as chat message for Yunshu Core processing
+            ws.send(JSON.stringify({
+                type: 'chat',
+                content: text,
+                images: [],
+                settings: {}
+            }));
+
+            input.value = '';
+        }
+
+        function triggerSearch() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            
+            if (!text || !ws) {
+                // Flash input red if empty
+                input.style.borderColor = 'red';
+                setTimeout(() => input.style.borderColor = '', 500);
+                return;
+            }
+
+            // Display system note
+            // appendMessage('user', `[检索记忆] ${text}`); // Optional: show intent? Let's just keep user msg
+            // Better: just append the user message if not already there? 
+            // Or maybe this is an explicit action separate from chat?
+            // User said: "点击使用再去检索" -> impl: Search based on input content.
+            
+            // We'll treat it as a "command" but maybe display it differently or just send request
+            // Let's display it so user sees what they searched
+            appendMessage('user', `🔍 ${text}`);
+
+            ws.send(JSON.stringify({
+                type: 'search_memory',
+                query: text
+            }));
+            
+            input.value = '';
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFeedback();
+            }
+        }
+
+        function toggleVoiceMode() {
+            isAutoPlay = !isAutoPlay;
+            const icon = document.getElementById('voice-icon');
+            const text = document.getElementById('voice-text');
+            
+            if (isAutoPlay) {
+                icon.textContent = '🔊';
+                text.textContent = '自动播放';
+            } else {
+                icon.textContent = '🔇';
+                text.textContent = '静音';
+                stopSpeaking(); // Stop current if muting
+            }
+        }
+
+        function stopSpeaking() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+        }
+
+        async function speakText(text) {
+            try {
+                stopSpeaking(); // Stop previous audio
+                
+                // Simple strip of code blocks and special chars
+                const cleanText = text.replace(/```[\s\S]*?```/g, "代码片段").replace(/[#*`]/g, "");
+                
+                // Visual feedback
+                const statusDot = document.getElementById('connection-status');
+                statusDot.style.boxShadow = '0 0 10px #00ffff';
+                
+                const res = await fetch('/api/speak', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text: cleanText })
+                });
+                
+                statusDot.style.boxShadow = ''; // Reset
+                
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    currentAudio = audio; // Track current
+                    audio.onended = () => { currentAudio = null; };
+                    audio.play();
+                } else {
+                    console.error('Speech generation failed');
+                }
+            } catch (e) {
+                console.error('Error speaking:', e);
+            }
+        }
+
+        // Skills Management
+        async function loadSkills() {
+            try {
+                const res = await fetch('/api/skills');
+                skills = await res.json();
+                renderSkillList();
+            } catch (e) {
+                console.error('Failed to load skills:', e);
+            }
+        }
+
+        function renderSkillList() {
+            const container = document.getElementById('skill-list-container');
+            container.innerHTML = '';
+            
+            skills.forEach(skill => {
+                const item = document.createElement('div');
+                item.className = 'nav-item';
+                item.onclick = () => openSkill(skill);
+                item.innerHTML = `
+                    <div class="nav-icon">🧩</div>
+                    <span class="nav-label">${skill.name || skill.id}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function openSkill(skill) {
+            // [Yunshu System] Notify Trae to load skill context
+            if (ws) {
+                ws.send(JSON.stringify({
+                    type: 'skill_selected',
+                    skill_id: skill.id,
+                    skill_name: skill.name || skill.id
+                }));
+            }
+
+            skillPanel.classList.add('open');
+            document.getElementById('skill-title').textContent = skill.name || skill.id;
+            document.getElementById('skill-desc').textContent = skill.description || '暂无描述';
+            
+            const body = document.getElementById('skill-body');
+            body.innerHTML = '<div style="padding:20px">加载中...</div>';
+
+            // [Yunshu System] Generic Visualization based on Skill Features
+            // 1. Workspace-based Skills (e.g. Novel Writer)
+            if (skill.workspace_root) {
+                try {
+                    const res = await fetch(`/api/skill/${skill.id}/files`);
+                    const data = await res.json();
+                    
+                    if (data.files) {
+                        currentSkillRoot = data.root;
+                        renderNovelWorkspace(data.files, body);
+                    } else {
+                        const errorMsg = data.error || '未找到工作区配置';
+                        body.innerHTML = `<div style="padding:20px">错误: ${errorMsg}</div>`;
+                    }
+                } catch (e) {
+                    body.innerHTML = `<div style="padding:20px; color:red">加载失败: ${e.message}</div>`;
+                }
+            } else {
+                // Default view for other skills (Dynamic Form)
+                let formHtml = '';
+                
+                if (skill.input && Array.isArray(skill.input) && skill.input.length > 0) {
+                    formHtml += '<div class="skill-form" style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">';
+                    skill.input.forEach(field => {
+                        formHtml += `
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; color:var(--text-muted); font-size:0.9em;">
+                                    ${field.label || field.name}
+                                    ${field.required ? '<span style="color:#ff6b6b">*</span>' : ''}
+                                </label>
+                        `;
+                        
+                        if (field.type === 'select' && field.options) {
+                            formHtml += `<select id="field-${field.name}" style="width:100%; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:var(--text-main); border-radius:4px;">`;
+                            field.options.forEach(opt => {
+                                const val = typeof opt === 'object' ? opt.value : opt;
+                                const label = typeof opt === 'object' ? opt.label : opt;
+                                const selected = field.default === val ? 'selected' : '';
+                                formHtml += `<option value="${val}" ${selected}>${label}</option>`;
+                            });
+                            formHtml += `</select>`;
+                        } else if (field.type === 'textarea') {
+                            formHtml += `<textarea id="field-${field.name}" placeholder="${field.placeholder || ''}" style="width:100%; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:var(--text-main); border-radius:4px; min-height:100px; font-family:monospace;">${field.default || ''}</textarea>`;
+                        } else {
+                            formHtml += `<input type="${field.type || 'text'}" id="field-${field.name}" value="${field.default || ''}" placeholder="${field.placeholder || ''}" style="width:100%; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--border); color:var(--text-main); border-radius:4px;">`;
+                        }
+                        
+                        formHtml += `</div>`;
+                    });
+                    formHtml += '</div>';
+                } else {
+                    formHtml = `<div style="padding: 30px;"><p>${skill.id} 没有定义输入参数。</p></div>`;
+                }
+
+                body.innerHTML = `
+                    ${formHtml}
+                    <div style="padding: 20px; border-top: 1px solid var(--border);">
+                        <button class="send-btn" style="width:100%; padding: 12px;" onclick="runSkill('${skill.id}')">
+                            🚀 执行 ${skill.name || skill.id}
+                        </button>
+                    </div>`;
+            }
+        }
+
+        // Novel Workspace Renderer
+        function renderNovelWorkspace(files, container) {
+            container.innerHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+                    <div class="cyber-toolbar">
+                        <button class="cyber-btn" onclick="triggerNovelAction('create')">
+                            <span>✨</span> 创建新书
+                        </button>
+                        <button class="cyber-btn" onclick="triggerNovelAction('modify')">
+                            <span>🛠️</span> 修改书籍
+                        </button>
+                        <button class="cyber-btn" onclick="triggerNovelAction('chapter')">
+                            <span>✒️</span> 章节管理
+                        </button>
+                    </div>
+                    <div style="flex: 1; display: flex; overflow: hidden;">
+                        <div class="file-tree-container" id="file-tree" style="width: 250px; border-right: 1px solid var(--border); overflow-y: auto;"></div>
+                        <div class="reader-container" style="flex: 1; overflow-y: auto; padding: 20px;">
+                            <div id="reader-content" class="reader-content">请从左侧选择文件阅读...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const treeRoot = document.getElementById('file-tree');
+            renderFileTree(files, treeRoot, '');
+        }
+
+        function triggerNovelAction(action) {
+            let prompt = "";
+            if (action === 'create') {
+                prompt = "【小说创作】创建新书";
+            } else if (action === 'modify') {
+                prompt = "【小说创作】修改书籍";
+            } else if (action === 'chapter') {
+                prompt = "【小说创作】新增/修改章节";
+            }
+            
+            if (prompt) {
+                const input = document.getElementById('user-input');
+                input.value = prompt;
+                input.focus();
+            }
+        }
+
+        function renderFileTree(structure, parent, currentPath) {
+            // Sort: Folders first, then files
+            const entries = Object.entries(structure).sort((a, b) => {
+                const aIsFolder = typeof a[1] === 'object';
+                const bIsFolder = typeof b[1] === 'object';
+                if (aIsFolder === bIsFolder) return a[0].localeCompare(b[0]);
+                return bIsFolder - aIsFolder;
+            });
+
+            entries.forEach(([name, value]) => {
+                const itemDiv = document.createElement('div');
+                const isFolder = typeof value === 'object';
+                const fullPath = currentPath ? `${currentPath}/${name}` : name;
+                
+                itemDiv.className = `tree-item ${isFolder ? 'folder' : 'file'}`;
+                itemDiv.textContent = isFolder ? `📁 ${name}` : `📄 ${name}`;
+                
+                if (isFolder) {
+                    itemDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        // Toggle children
+                        let childrenContainer = itemDiv.nextElementSibling;
+                        if (!childrenContainer || !childrenContainer.classList.contains('tree-children')) {
+                            childrenContainer = document.createElement('div');
+                            childrenContainer.className = 'tree-children';
+                            childrenContainer.style.paddingLeft = '15px';
+                            renderFileTree(value, childrenContainer, fullPath);
+                            itemDiv.after(childrenContainer);
+                        } else {
+                            childrenContainer.style.display = childrenContainer.style.display === 'none' ? 'block' : 'none';
+                        }
+                    };
+                    parent.appendChild(itemDiv);
+                } else {
+                    itemDiv.onclick = () => openFile(fullPath);
+                    parent.appendChild(itemDiv);
+                }
+            });
+        }
+
+        async function openFile(relativePath) {
+            const reader = document.getElementById('reader-content');
+            reader.innerHTML = '<div style="color: var(--text-muted);">加载中...</div>';
+            
+            try {
+                const fullPath = `${currentSkillRoot}/${relativePath}`.replace(/\\/g, '/');
+                const res = await fetch(`/api/files/read?path=${encodeURIComponent(fullPath)}`);
+                const data = await res.json();
+                
+                if (data.content !== undefined) {
+                    reader.innerHTML = `
+                        <div class="markdown-content">
+                            ${DOMPurify.sanitize(marked.parse(data.content))}
+                        </div>
+                    `;
+                } else {
+                    reader.innerHTML = `<div style="color: red;">错误: ${data.error || '无法读取文件'}</div>`;
+                }
+            } catch (e) {
+                reader.innerHTML = `<div style="color: red;">网络错误: ${e.message}</div>`;
+            }
+        }
+        function closeSkillPanel() {
+            skillPanel.classList.remove('open');
+        }
+
+        function runSkill(skillId) {
+            if (!ws) return;
+
+            // Collect params from dynamic form
+            const params = {};
+            const skill = skills.find(s => s.id === skillId);
+            let hasParams = false;
+            
+            if (skill && skill.input) {
+                skill.input.forEach(field => {
+                    const el = document.getElementById(`field-${field.name}`);
+                    if (el) {
+                        params[field.name] = el.value;
+                        hasParams = true;
+                    }
+                });
+            }
+
+            // Construct command
+            let command = "";
+            if (hasParams) {
+                command = `【系统指令】执行技能 ${skillId}，参数：\n\`\`\`json\n${JSON.stringify(params, null, 2)}\n\`\`\``;
+            } else {
+                command = `【系统指令】激活技能：${skillId}`;
+            }
+            
+            // Display user message
+            appendMessage('user', hasParams ? `执行技能: ${skill.name || skillId}` : command);
+
+            // Send to backend
+            ws.send(JSON.stringify({
+                type: 'chat',
+                content: command,
+                images: [],
+                settings: {}
+            }));
+            
+            // Close panel
+            closeSkillPanel();
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

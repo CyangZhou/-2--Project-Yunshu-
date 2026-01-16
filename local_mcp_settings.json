@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "yunshu-system": {
+      "command": "python",
+      "args": [
+        "yunshu_docker_bridge.py"
+      ],
+      "env": {
+        "PYTHONPATH": "e:/trae的工作区/01云舒系统02版/components/mcp-feedback-enhanced;e:/trae的工作区/01云舒系统02版",
+        "YUNSHU_SPEAKER_PORT": "10010"
+      }
+    }
+  }
+}
