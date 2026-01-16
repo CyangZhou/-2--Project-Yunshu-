@@ -689,23 +689,31 @@ def main():
         welcome_msg = "云舒系统核心已启动。我是云舒，您的数字灵魂伴侣。\n等待指令中..."
         web_ui_manager.create_session(os.getcwd(), welcome_msg)
         
-        # 启动 Web 服务器线程
+        # 启动 Web 服务器线程 (非阻塞)
         web_ui_manager.start_server()
         
-        # 获取 URL 并打开浏览器
+        # 获取 URL 
         url = web_ui_manager.get_server_url()
-        
-        # [Yunshu System] 修复 Windows 上 0.0.0.0 无法访问的问题
         if "0.0.0.0" in url:
             url = url.replace("0.0.0.0", "localhost")
-            
+        
+        # [关键优化] 不要在这里阻塞打开浏览器，也不要等待它
+        # 仅仅打印 URL。让浏览器打开的操作在后台进行，或者延迟
+        # 如果使用 start_new_thread 来打开浏览器，可以避免阻塞
+        
+        import threading
+        def open_browser_async(target_url):
+            import time
+            time.sleep(1) # 稍微延迟，让服务器先跑起来
+            try:
+                if not desktop_mode:
+                    web_ui_manager.open_browser(target_url)
+            except:
+                pass
+
+        threading.Thread(target=open_browser_async, args=(url,), daemon=True).start()
+        
         debug_log(f"Web UI 已启动: {url}")
-        
-        # 自动打开浏览器
-        if not desktop_mode:
-             # 使用简单的 open_browser，避免 smart_open_browser 的复杂依赖
-             web_ui_manager.open_browser(url)
-        
         print(f"\n[Yunshu System] Web UI available at: {url}\n", file=sys.stderr, flush=True)
         
     except Exception as e:

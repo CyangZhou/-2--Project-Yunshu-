@@ -38,14 +38,12 @@ pip install -r requirements.txt
 {
   "mcpServers": {
     "yunshu-system": {
-      "command": "python",
+      "command": "D:/新建文件夹/python.exe",
       "args": [
-        "-m",
-        "mcp_feedback_enhanced"
+        "E:/trae的工作区/01云舒系统02版/run_mcp.py"
       ],
-      "cwd": "E:\\path\\to\\your\\repo\\components\\mcp-feedback-enhanced",
       "env": {
-        "PYTHONPATH": "E:\\path\\to\\your\\repo"
+        "PYTHONPATH": "E:/trae的工作区/01云舒系统02版/components/mcp-feedback-enhanced;E:/trae的工作区/01云舒系统02版"
       }
     }
   }

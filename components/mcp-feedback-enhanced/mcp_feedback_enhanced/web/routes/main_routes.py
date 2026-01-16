@@ -90,7 +90,7 @@ def init_yunshu_core():
         print("[Yunshu System] Core Initialized Successfully", file=sys.stderr)
         
     except Exception as e:
-        print(f"Core Init Error: {e}")
+        print(f"Core Init Error: {e}", file=sys.stderr)
         debug_trace(f"Core Init Error: {e}")
         global_consciousness = None
         global_novel_tools = None
@@ -117,7 +117,6 @@ def debug_trace(msg):
         pass
 
 debug_trace(f"LOADING MAIN_ROUTES.PY FROM {__file__}")
-print(f"LOADING MAIN_ROUTES.PY FROM {__file__}")
 
 
 def load_user_layout_settings() -> str:

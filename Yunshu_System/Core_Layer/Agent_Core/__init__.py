@@ -1,6 +1,7 @@
 from .consciousness import YunshuConsciousness
 from .evolution import EvolutionEngine
 from .soul_bridge import SoulBridge
+import sys
 
 class AgentBrain:
     """
@@ -8,12 +9,12 @@ class AgentBrain:
     整合意识、进化和表达模块，作为系统的中央处理器。
     """
     def __init__(self):
-        print("[System] Initializing Yunshu Agent Core...")
+        print("[System] Initializing Yunshu Agent Core...", file=sys.stderr)
         self.consciousness = YunshuConsciousness()
         self.evolution = EvolutionEngine()
         self.soul_bridge = SoulBridge()
         self.is_active = True
-        print("[System] Agent Core Online.")
+        print("[System] Agent Core Online.", file=sys.stderr)
 
     def think(self, user_input: str) -> str:
         """
@@ -40,7 +41,7 @@ class AgentBrain:
         
         # 附加内心独白（调试用，或作为元数据返回）
         if intent_meta["inner_monologue"]:
-            print(f"[Inner Voice] {intent_meta['inner_monologue']}")
+            print(f"[Inner Voice] {intent_meta['inner_monologue']}", file=sys.stderr)
             
         return final_response
 
